@@ -1,0 +1,290 @@
+{% extends 'base.html' %} {% block title %}Checkout - AI E-Commerce{% endblock
+%} {% block content %}
+<div class="checkout-page">
+  <h1 class="mb-4">Checkout</h1>
+
+  <div class="row">
+    <!-- Checkout Form -->
+    <div class="col-lg-8 mb-4">
+      <form method="post" action="{% url 'checkout' %}" class="checkout-form">
+        {% csrf_token %}
+
+        <div class="card mb-4">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">Shipping Information</h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label
+                  for="{{ order_form.full_name.id_for_label }}"
+                  class="form-label"
+                  >Full Name</label
+                >
+                {{ order_form.full_name }} {% if order_form.full_name.errors %}
+                <div class="invalid-feedback d-block">
+                  {{ order_form.full_name.errors }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label
+                  for="{{ order_form.email.id_for_label }}"
+                  class="form-label"
+                  >Email</label
+                >
+                {{ order_form.email }} {% if order_form.email.errors %}
+                <div class="invalid-feedback d-block">
+                  {{ order_form.email.errors }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label
+                  for="{{ order_form.phone.id_for_label }}"
+                  class="form-label"
+                  >Phone</label
+                >
+                {{ order_form.phone }} {% if order_form.phone.errors %}
+                <div class="invalid-feedback d-block">
+                  {{ order_form.phone.errors }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="col-12">
+                <label
+                  for="{{ order_form.address.id_for_label }}"
+                  class="form-label"
+                  >Address</label
+                >
+                {{ order_form.address }} {% if order_form.address.errors %}
+                <div class="invalid-feedback d-block">
+                  {{ order_form.address.errors }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="col-md-4">
+                <label
+                  for="{{ order_form.city.id_for_label }}"
+                  class="form-label"
+                  >City</label
+                >
+                {{ order_form.city }} {% if order_form.city.errors %}
+                <div class="invalid-feedback d-block">
+                  {{ order_form.city.errors }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="col-md-4">
+                <label
+                  for="{{ order_form.country.id_for_label }}"
+                  class="form-label"
+                  >Country</label
+                >
+                {{ order_form.country }} {% if order_form.country.errors %}
+                <div class="invalid-feedback d-block">
+                  {{ order_form.country.errors }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="col-md-4">
+                <label
+                  for="{{ order_form.postal_code.id_for_label }}"
+                  class="form-label"
+                  >Postal Code</label
+                >
+                {{ order_form.postal_code }} {% if order_form.postal_code.errors
+                %}
+                <div class="invalid-feedback d-block">
+                  {{ order_form.postal_code.errors }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="col-12">
+                <label
+                  for="{{ order_form.notes.id_for_label }}"
+                  class="form-label"
+                  >Order Notes (optional)</label
+                >
+                {{ order_form.notes }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">Shipping Method</h5>
+          </div>
+          <div class="card-body">
+            <div class="shipping-methods">
+              {% for method in shipping_methods %}
+              <div class="form-check mb-3">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="shipping_method"
+                  id="shipping-{{ method.id }}"
+                  value="{{ method.id }}"
+                  {%
+                  if
+                  forloop.first
+                  %}checked{%
+                  endif
+                  %}
+                />
+                <label
+                  class="form-check-label d-flex justify-content-between align-items-center"
+                  for="shipping-{{ method.id }}"
+                >
+                  <div>
+                    <strong>{{ method.name }}</strong>
+                    <p class="text-muted mb-0">
+                      Estimated delivery: {{ method.estimated_days }} days
+                    </p>
+                  </div>
+                  <span class="fw-bold">${{ method.price }}</span>
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">Payment Method</h5>
+          </div>
+          <div class="card-body">
+            <div class="payment-methods">
+              <div class="payment-method active">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="payment_method"
+                    id="payment-esewa"
+                    value="esewa"
+                    checked
+                  />
+                  <label
+                    class="form-check-label d-flex justify-content-between align-items-center"
+                    for="payment-esewa"
+                  >
+                    <div>
+                      <strong>eSewa</strong>
+                      <p class="text-muted mb-0">Pay securely with eSewa</p>
+                    </div>
+                    <img
+                      src="/static/images/esewa-logo.png"
+                      alt="eSewa"
+                      class="payment-method-logo"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-lock me-2"></i>Place Order
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="col-lg-4">
+      <div class="card cart-summary">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Order Summary</h5>
+        </div>
+        <div class="card-body">
+          {% for item in cart.items.all %}
+          <div class="d-flex justify-content-between mb-3">
+            <div>
+              <span class="fw-bold">{{ item.product.title }}</span>
+              <div class="text-muted">Qty: {{ item.quantity }}</div>
+            </div>
+            <div class="fw-bold">${{ item.get_total_price }}</div>
+          </div>
+          {% endfor %}
+
+          <hr />
+
+          <div class="summary-item">
+            <span>Subtotal:</span>
+            <span>${{ cart.get_total_price }}</span>
+          </div>
+          <div class="summary-item">
+            <span>Shipping:</span>
+            <span id="shipping-cost">$0.00</span>
+          </div>
+          <div class="summary-item">
+            <span>Tax (13%):</span>
+            <span>${{ cart.get_total_price|floatformat:2 }}</span>
+          </div>
+          <div class="summary-item summary-total">
+            <span>Total:</span>
+            <span id="order-total">${{ cart.get_total_price }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secure Checkout -->
+      <div class="card mt-3">
+        <div class="card-body">
+          <h5 class="card-title">Secure Checkout</h5>
+          <p class="text-muted">
+            Your payment information is processed securely. We do not store
+            credit card details nor have access to your credit card information.
+          </p>
+          <div class="d-flex justify-content-between mt-3">
+            <i class="fas fa-lock fa-2x text-success"></i>
+            <i class="fab fa-cc-visa fa-2x"></i>
+            <i class="fab fa-cc-mastercard fa-2x"></i>
+            <i class="fab fa-cc-amex fa-2x"></i>
+            <i class="fab fa-cc-paypal fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Update shipping cost and total when shipping method changes
+  document.addEventListener('DOMContentLoaded', function() {
+      const shippingInputs = document.querySelectorAll('input[name="shipping_method"]');
+      const shippingCostElement = document.getElementById('shipping-cost');
+      const orderTotalElement = document.getElementById('order-total');
+      const subtotal = {{ cart.get_total_price }};
+
+      shippingInputs.forEach(input => {
+          input.addEventListener('change', function() {
+              const shippingMethodId = this.value;
+
+              // Get shipping cost from selected method
+              {% for method in shipping_methods %}
+                  if (shippingMethodId == '{{ method.id }}') {
+                      const shippingCost = {{ method.price }};
+                      shippingCostElement.textContent = '$' + shippingCost.toFixed(2);
+
+                      // Update total
+                      const total = subtotal + shippingCost;
+                      orderTotalElement.textContent = '$' + total.toFixed(2);
+                  }
+              {% endfor %}
+          });
+      });
+
+      // Trigger change event on the checked shipping method
+      const checkedShippingInput = document.querySelector('input[name="shipping_method"]:checked');
+      if (checkedShippingInput) {
+          checkedShippingInput.dispatchEvent(new Event('change'));
+      }
+  });
+</script>
+{% endblock %}

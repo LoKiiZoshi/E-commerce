@@ -1,0 +1,144 @@
+{% extends 'inventory/base.html' %} {% block title %}Purchase Orders - Inventory
+Management System{% endblock %} {% block header %}Purchase Orders{% endblock %}
+{% block header_buttons %}
+<a href="{% url 'add_purchase_order' %}" class="btn btn-sm btn-outline-primary">
+  <i class="fas fa-plus"></i> New Purchase Order
+</a>
+{% endblock %} {% block content %}
+<div class="card">
+  <div class="card-body">
+    <ul class="nav nav-tabs mb-3" id="poTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active"
+          id="all-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#all"
+          type="button"
+          role="tab"
+          aria-controls="all"
+          aria-selected="true"
+        >
+          All
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="draft-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#draft"
+          type="button"
+          role="tab"
+          aria-controls="draft"
+          aria-selected="false"
+        >
+          Draft
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="approved-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#approved"
+          type="button"
+          role="tab"
+          aria-controls="approved"
+          aria-selected="false"
+        >
+          Approved
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="ordered-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#ordered"
+          type="button"
+          role="tab"
+          aria-controls="ordered"
+          aria-selected="false"
+        >
+          Ordered
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="received-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#received"
+          type="button"
+          role="tab"
+          aria-controls="received"
+          aria-selected="false"
+        >
+          Received
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="poTabsContent">
+      <div
+        class="tab-pane fade show active"
+        id="all"
+        role="tabpanel"
+        aria-labelledby="all-tab"
+      >
+        {% include 'inventory/partials/purchase_order_table.html' with
+        purchase_orders=purchase_orders %}
+      </div>
+      <div
+        class="tab-pane fade"
+        id="draft"
+        role="tabpanel"
+        aria-labelledby="draft-tab"
+      >
+        {% include 'inventory/partials/purchase_order_table.html' with
+        purchase_orders=purchase_orders|filter_by_status:'draft' %}
+      </div>
+      <div
+        class="tab-pane fade"
+        id="approved"
+        role="tabpanel"
+        aria-labelledby="approved-tab"
+      >
+        {% include 'inventory/partials/purchase_order_table.html' with
+        purchase_orders=purchase_orders|filter_by_status:'approved' %}
+      </div>
+      <div
+        class="tab-pane fade"
+        id="ordered"
+        role="tabpanel"
+        aria-labelledby="ordered-tab"
+      >
+        {% include 'inventory/partials/purchase_order_table.html' with
+        purchase_orders=purchase_orders|filter_by_status:'ordered' %}
+      </div>
+      <div
+        class="tab-pane fade"
+        id="received"
+        role="tabpanel"
+        aria-labelledby="received-tab"
+      >
+        {% include 'inventory/partials/purchase_order_table.html' with
+        purchase_orders=purchase_orders|filter_by_status:'received' %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  // Filter function for tabs
+  // Note: In a real implementation, you would use Django template filters or JavaScript to filter the data
+  document.addEventListener("DOMContentLoaded", function () {
+    // This is a placeholder for the filter functionality
+    // In a real implementation, you would either:
+    // 1. Use Django template filters to filter the data server-side
+    // 2. Use JavaScript to filter the data client-side
+    // 3. Make AJAX requests to get filtered data
+  });
+</script>
+{% endblock %}

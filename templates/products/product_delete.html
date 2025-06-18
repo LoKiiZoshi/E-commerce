@@ -1,0 +1,30 @@
+{% extends 'base.html' %} {% block title %}Delete Product | AI E-Commerce{%
+endblock %} {% block content %}
+<div class="row">
+  <div class="col-md-6 mx-auto">
+    <div class="card">
+      <div class="card-header bg-danger text-white">
+        <h4 class="mb-0">Delete Product</h4>
+      </div>
+      <div class="card-body">
+        <p>
+          Are you sure you want to delete the product "{{ product.title }}"?
+        </p>
+        <p class="text-danger">This action cannot be undone.</p>
+
+        <form method="POST">
+          {% csrf_token %}
+          <div class="d-flex justify-content-between">
+            <a
+              href="{% url 'product_detail' slug=product.slug %}"
+              class="btn btn-secondary"
+              >Cancel</a
+            >
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

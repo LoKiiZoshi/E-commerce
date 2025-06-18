@@ -1,0 +1,184 @@
+{% extends 'base.html' %} {% block title %} AI E-Commerce - Home{% endblock %}
+{%block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h1>Welcome to AI E-Commerce</h1>
+        <p>
+          Experience the future of shopping with our AI-powered platform.
+          Discover personalized recommendations, smart search, and a seamless
+          shopping experience.
+        </p>
+        <a href="{% url 'product_list' %}" class="btn btn-light btn-lg"
+          >Shop Now</a
+        >
+      </div>
+      <div class="col-lg-6">
+        <img
+          src="/static/images/hero-image.png"
+          alt="AI E-Commerce"
+          class="img-fluid"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Products -->
+<section class="mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Featured Products</h2>
+    <a href="{% url 'product_list' %}" class="btn btn-outline-primary"
+      >View All</a
+    >
+  </div>
+
+  <div class="row">
+    {% for product in featured_products %}
+    <div class="col-md-3 col-sm-6 mb-4">
+      <div class="card product-card h-100">
+        {% if product.discount_price %}
+        <span class="badge bg-danger"
+          >{{ product.get_discount_percentage }}% OFF</span
+        >
+        {% endif %} {% if product.images.exists %}
+        <img
+          src="{{ product.images.first.image.url }}"
+          class="card-img-top"
+          alt="{{ product.title }}"
+        />
+        {% else %}
+        <img
+          src="/static/images/product-placeholder.png"
+          class="card-img-top"
+          alt="{{ product.title }}"
+        />
+        {% endif %}
+
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">{{ product.title }}</h5>
+          <div class="mt-auto">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                {% if product.discount_price %}
+                <span class="price">${{ product.discount_price }}</span>
+                <span class="original-price">${{ product.price }}</span>
+                {% else %}
+                <span class="price">${{ product.price }}</span>
+                {% endif %}
+              </div>
+              <div class="rating text-warning">
+                {% with avg_rating=product.reviews.all|length|default:0 %} {% if
+                avg_rating > 0 %} {% for i in "12345" %} {% if forloop.counter
+                <= avg_rating %}
+                <i class="fas fa-star"></i>
+
+                <i class="far fa-star"></i>
+                {% endfor %}
+                <small class="text-muted">No ratings</small>
+                {% endwith %}
+              </div>
+            </div>
+            <a
+              href="{% url 'product_detail' slug=product.slug %}"
+              class="btn btn-primary w-100"
+              >View Details</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info">No featured products available.</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Categories -->
+<section class="mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Shop by Category</h2>
+    <a href="{% url 'product_list' %}" class="btn btn-outline-primary"
+      >View All</a
+    >
+  </div>
+
+  <div class="row">
+    {% for category in categories %}
+    <div class="col-md-4 col-sm-6 mb-4">
+      <a
+        href="{% url 'category_detail' slug=category.slug %}"
+        class="text-decoration-none"
+      >
+        <div class="category-card">
+          {% if category.image %}
+          <img src="{{ category.image.url }}" alt="{{ category.name }}" />
+          {% else %}
+          <img
+            src="/static/images/category-placeholder.png"
+            alt="{{ category.name }}"
+          />
+          {% endif %}
+          <div class="category-content">
+            <h3 class="category-title">{{ category.name }}</h3>
+            <p class="mb-0">{{ category.products.count }} products</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info">No categories available.</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- AI Features -->
+<section class="mb-5">
+  <h2 class="mb-4">AI-Powered Shopping Experience</h2>
+
+  <div class="row">
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+          <h3 class="card-title">Smart Recommendations</h3>
+          <p class="card-text">
+            Our AI analyzes your browsing and purchase history to recommend
+            products you'll love.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-robot fa-3x text-primary mb-3"></i>
+          <h3 class="card-title">AI Chatbot</h3>
+          <p class="card-text">
+            Get instant help with our AI assistant that can answer questions and
+            guide your shopping.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-user-shield fa-3x text-primary mb-3"></i>
+          <h3 class="card-title">Face Recognition</h3>
+          <p class="card-text">
+            Secure and convenient login with our advanced face recognition
+            technology.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

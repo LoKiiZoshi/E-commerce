@@ -1,0 +1,116 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+<div class="container mt-5">
+  <div class="profile-card card">
+    <div class="profile-header">
+      <img
+        src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}"
+        alt="Profile Picture"
+        class="profile-avatar"
+      />
+      <h3 class="profile-name">{{ user.get_full_name|default:user.email }}</h3>
+      <p class="profile-email">{{ user.email }}</p>
+    </div>
+    <div class="profile-body">
+      {% if messages %} {% for message in messages %}
+      <div
+        class="alert alert-{{ message.tags }} alert-dismissible fade show"
+        role="alert"
+      >
+        {{ message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+      {% endfor %} {% endif %}
+      <div class="profile-section">
+        <h4 class="section-title">Update Profile</h4>
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="{{ form.first_name.id_for_label }}" class="form-label"
+              >First Name</label
+            >
+            {{ form.first_name }} {% if form.first_name.errors %}
+            <div class="text-danger">{{ form.first_name.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label for="{{ form.last_name.id_for_label }}" class="form-label"
+              >Last Name</label
+            >
+            {{ form.last_name }} {% if form.last_name.errors %}
+            <div class="text-danger">{{ form.last_name.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label
+              for="{{ form.profile_picture.id_for_label }}"
+              class="form-label"
+              >Profile Picture</label
+            >
+            {{ form.profile_picture }} {% if form.profile_picture.errors %}
+            <div class="text-danger">{{ form.profile_picture.errors }}</div>
+            {% endif %}
+          </div>
+          <button type="submit" class="btn btn-primary">Update Profile</button>
+        </form>
+      </div>
+      <div class="profile-section">
+        <h4 class="section-title">Face Recognition</h4>
+        <button id="registerFaceBtn" class="btn btn-outline-primary">
+          Register Face
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document
+    .getElementById("registerFaceBtn")
+    .addEventListener("click", async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        const video = document.createElement("video");
+        video.srcObject = stream;
+        video.play();
+
+        // Capture face data (simplified for demo)
+        setTimeout(() => {
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          canvas.getContext("2d").drawImage(video, 0, 0);
+          const faceData = canvas.toDataURL("image/jpeg");
+
+          // Send face data to server
+          fetch('{% url "register_face" %}', {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({ face_data: faceData }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              alert(data.message);
+            })
+            .catch((error) => {
+              alert("Error registering face: " + error);
+            });
+
+          // Stop video stream
+          stream.getTracks().forEach((track) => track.stop());
+        }, 3000);
+      } catch (error) {
+        alert("Error accessing camera: " + error);
+      }
+    });
+</script>
+{% endblock %}

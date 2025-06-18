@@ -1,0 +1,58 @@
+{% extends 'inventory/base.html' %} {% block title %}Suppliers - Inventory
+Management System{% endblock %} {% block header %} Suppliers{% endblock %}
+{%block header_buttons %}
+<a href="{% url 'add_supplier' %}" class="btn btn-sm btn-outline-primary">
+  <i class="fas fa-plus"></i> Add Supplier
+</a>
+{% endblock %} {% block content %}
+<div class="card">
+  <div class="card-body">
+    {% if suppliers %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Contact Person</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for supplier in suppliers %}
+          <tr>
+            <td>{{ supplier.name }}</td>
+            <td>{{ supplier.contact_person }}</td>
+            <td>{{ supplier.email }}</td>
+            <td>{{ supplier.phone }}</td>
+            <td>{{ supplier.address|truncatechars:30 }}</td>
+            <td>
+              <a
+                href="{% url 'edit_supplier' supplier_id=supplier.id %}"
+                class="btn btn-sm btn-outline-primary"
+              >
+                <i class="fas fa-edit"></i>
+              </a>
+              <a
+                href="{% url 'add_purchase_order' %}?supplier={{ supplier.id }}"
+                class="btn btn-sm btn-outline-success"
+              >
+                <i class="fas fa-shopping-cart"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-2"></i> No suppliers found.
+      <a href="{% url 'add_supplier' %}" class="alert-link">Add a supplier</a>.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

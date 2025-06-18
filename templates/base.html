@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}AI E-Commerce{% endblock %}</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css" />
+
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="site-header">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+          <a class="navbar-brand" href="{% url 'home' %}">
+            <i class="fas fa-brain me-2"></i>AI E-Commerce
+          </a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'home' %}">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'product_list' %}">Products</a>
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                >
+                  Categories
+                </a>
+                <ul class="dropdown-menu">
+                  {% for category in categories %}
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="{% url 'category_detail' slug=category.slug %}"
+                      >{{ category.name }}</a
+                    >
+                  </li>
+                  {% endfor %}
+                  <li><hr class="dropdown-divider" /></li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'product_list' %}"
+                      >All Categories</a
+                    >
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <!-- Search Form -->
+            <form
+              class="d-flex mx-auto"
+              action="{% url 'product_list' %}"
+              method="get"
+            >
+              <div class="input-group">
+                <input
+                  class="form-control"
+                  type="search"
+                  name="q"
+                  placeholder="Search products..."
+                  aria-label="Search"
+                  value="{{ search_query|default:'' }}"
+                />
+                <button class="btn btn-light" type="submit">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </form>
+
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'cart_detail' %}">
+                  <i class="fas fa-shopping-cart"></i>
+                  <span class="badge bg-danger rounded-pill cart-count">
+                    {% if request.user.is_authenticated %}
+                    {{request.user.cart.get_total_items|default:'0' }} {%else%}
+                    0 {% endif %}</span
+                  >
+                </a>
+              </li>
+              {% if request.user.is_authenticated %}
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                >
+                  <i class="fas fa-user-circle me-1"></i>
+                  {{request.user.username }}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <a class="dropdown-item" href="{% url 'profile' %}"
+                      >My Profile</a
+                    >
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'order_list' %}"
+                      >My Orders</a
+                    >
+                  </li>
+                  {% if request.user.is_staff %}
+                  <li><hr class="dropdown-divider" /></li>
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="{% url 'inventory_dashboard' %}"
+                      >Inventory</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="{% url 'analytics_dashboard' %}"
+                      >Analytics</a
+                    >
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="/admin/">Admin Panel</a>
+                  </li>
+                  {% endif %}
+                  <li><hr class="dropdown-divider" /></li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'logout' %}"
+                      >Logout</a
+                    >
+                  </li>
+                </ul>
+              </li>
+              {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'login' %}">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'register' %}">Register</a>
+              </li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="site-main py-4">
+      <div class="container">
+        {% if messages %} {% for message in messages %}
+        <div
+          class="alert alert-{{ message.tags }} alert-dismissible fade show"
+          role="alert"
+        >
+          {{ message }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close"
+          ></button>
+        </div>
+        {% endfor %} {% endif %} {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer bg-dark text-white py-5 mt-5">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4 mb-4 mb-md-0">
+            <h5 class="text-uppercase mb-4">AI E-Commerce</h5>
+            <p>
+              Experience the future of shopping with our AI-powered e-commerce
+              platform. Smart recommendations, personalized experiences, and
+              cutting-edge technology.
+            </p>
+            <div class="social-icons">
+              <a href="#" class="text-white me-3"
+                ><i class="fab fa-facebook-f"></i
+              ></a>
+              <a href="#" class="text-white me-3"
+                ><i class="fab fa-twitter"></i
+              ></a>
+              <a href="#" class="text-white me-3"
+                ><i class="fab fa-instagram"></i
+              ></a>
+              <a href="#" class="text-white"
+                ><i class="fab fa-linkedin-in"></i
+              ></a>
+            </div>
+          </div>
+          <div class="col-md-2 mb-4 mb-md-0">
+            <h5 class="text-uppercase mb-4">Shop</h5>
+            <ul class="list-unstyled">
+              <li class="mb-2">
+                <a
+                  href="{% url 'product_list' %}"
+                  class="text-white text-decoration-none"
+                  >All Products</a
+                >
+              </li>
+              <li class="mb-2">
+                <a href="#" class="text-white text-decoration-none"
+                  >New Arrivals</a
+                >
+              </li>
+              <li class="mb-2">
+                <a href="#" class="text-white text-decoration-none">Featured</a>
+              </li>
+              <li class="mb-2">
+                <a href="#" class="text-white text-decoration-none"
+                  >Discounts</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-2 mb-4 mb-md-0">
+            <h5 class="text-uppercase mb-4">Account</h5>
+            <ul class="list-unstyled">
+              <li class="mb-2">
+                <a
+                  href="{% url 'profile' %}"
+                  class="text-white text-decoration-none"
+                  >My Account</a
+                >
+              </li>
+              <li class="mb-2">
+                <a
+                  href="{% url 'order_list' %}"
+                  class="text-white text-decoration-none"
+                  >Orders</a
+                >
+              </li>
+              <li class="mb-2">
+                <a
+                  href="{% url 'cart_detail' %}"
+                  class="text-white text-decoration-none"
+                  >Cart</a
+                >
+              </li>
+              <li class="mb-2">
+                <a href="#" class="text-white text-decoration-none">Wishlist</a>
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-4">
+            <h5 class="text-uppercase mb-4">Newsletter</h5>
+            <p>
+              Subscribe to receive updates on new products and special
+              promotions.
+            </p>
+            <form class="mb-3">
+              <div class="input-group">
+                <input
+                  type="email"
+                  class="form-control"
+                  placeholder="Your Email"
+                  required
+                />
+                <button class="btn btn-primary" type="submit">Subscribe</button>
+              </div>
+            </form>
+            <p class="small">
+              We respect your privacy. Unsubscribe at any time.
+            </p>
+          </div>
+        </div>
+        <hr class="my-4 bg-light" />
+        <div class="row align-items-center">
+          <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+            <p class="mb-0">&copy; 2023 AI E-Commerce. All rights reserved.</p>
+          </div>
+          <div class="col-md-6 text-center text-md-end">
+            <a href="#" class="text-white text-decoration-none me-3"
+              >Privacy Policy</a
+            >
+            <a href="#" class="text-white text-decoration-none me-3"
+              >Terms of Service</a
+            >
+            <a href="#" class="text-white text-decoration-none">Contact Us</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Chatbot Widget -->
+    <div class="chatbot-widget" id="chatbotWidget">
+      <div class="chatbot-header" id="chatbotHeader">
+        <h5 class="mb-0"><i class="fas fa-robot me-2"></i>AI Assistant</h5>
+        <button class="btn-close text-white" id="closeChatbot"></button>
+      </div>
+      <div class="chatbot-body" id="chatbotBody">
+        <div class="messages" id="chatMessages">
+          <div class="message bot-message">
+            <div class="message-content">Hello! How can I help you today?</div>
+          </div>
+        </div>
+      </div>
+      <div class="chatbot-footer">
+        <form id="chatbotForm">
+          <div class="input-group">
+            <input
+              type="text"
+              class="form-control"
+              id="chatbotInput"
+              placeholder="Type your message..."
+            />
+            <button class="btn btn-primary" type="submit">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <button class="chatbot-toggle" id="chatbotToggle">
+      <i class="fas fa-comments"></i>
+    </button>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- jQuery (for AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="/static/js/main.js"></script>
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

@@ -1,0 +1,235 @@
+{% extends 'inventory/base.html' %} {% block title %}Purchase Order #{{
+purchase_order.id }} - Inventory Management System{% endblock %} {% block header
+%}Purchase Order: PO-{{ purchase_order.id }}{% endblock %} {% block
+header_buttons %} {% if purchase_order.status == 'draft' %}
+<form
+  method="post"
+  action="{% url 'update_purchase_order_status' po_id=purchase_order.id %}"
+  class="d-inline me-2"
+>
+  {% csrf_token %}
+  <input type="hidden" name="status" value="approved" />
+  <button type="submit" class="btn btn-sm btn-success">
+    <i class="fas fa-check"></i> Approve
+  </button>
+</form>
+{% elif purchase_order.status == 'approved' %}
+<form
+  method="post"
+  action="{% url 'update_purchase_order_status' po_id=purchase_order.id %}"
+  class="d-inline me-2"
+>
+  {% csrf_token %}
+  <input type="hidden" name="status" value="ordered" />
+  <button type="submit" class="btn btn-sm btn-primary">
+    <i class="fas fa-paper-plane"></i> Mark as Ordered
+  </button>
+</form>
+{% endif %} {% if purchase_order.status != 'cancelled' and purchase_order.status
+!= 'received' %}
+<form
+  method="post"
+  action="{% url 'update_purchase_order_status' po_id=purchase_order.id %}"
+  class="d-inline me-2"
+>
+  {% csrf_token %}
+  <input type="hidden" name="status" value="cancelled" />
+  <button type="submit" class="btn btn-sm btn-danger">
+    <i class="fas fa-times"></i> Cancel
+  </button>
+</form>
+{% endif %}
+
+<a
+  href="{% url 'add_purchase_order_item' po_id=purchase_order.id %}"
+  class="btn btn-sm btn-outline-primary"
+>
+  <i class="fas fa-plus"></i> Add Item
+</a>
+{% endblock %} {% block content %}
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-info-circle me-2"></i> Purchase Order Information
+      </div>
+      <div class="card-body">
+        <table class="table table-sm">
+          <tr>
+            <th style="width: 30%">Status:</th>
+            <td>
+              <span class="badge badge-{{ purchase_order.status }}">
+                {{ purchase_order.get_status_display }}
+              </span>
+            </td>
+          </tr>
+          <tr>
+            <th>Supplier:</th>
+            <td>{{ purchase_order.supplier.name }}</td>
+          </tr>
+          <tr>
+            <th>Order Date:</th>
+            <td>{{ purchase_order.order_date }}</td>
+          </tr>
+          <tr>
+            <th>Expected Delivery:</th>
+            <td>{{ purchase_order.expected_delivery_date }}</td>
+          </tr>
+          <tr>
+            <th>Created By:</th>
+            <td>{{ purchase_order.created_by.username }}</td>
+          </tr>
+          <tr>
+            <th>Created At:</th>
+            <td>{{ purchase_order.created_at|date:"M d, Y H:i" }}</td>
+          </tr>
+          <tr>
+            <th>Notes:</th>
+            <td>{{ purchase_order.notes|default:"-" }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-truck me-2"></i> Supplier Information
+      </div>
+      <div class="card-body">
+        <table class="table table-sm">
+          <tr>
+            <th style="width: 30%">Contact Person:</th>
+            <td>{{ purchase_order.supplier.contact_person }}</td>
+          </tr>
+          <tr>
+            <th>Email:</th>
+            <td>{{ purchase_order.supplier.email }}</td>
+          </tr>
+          <tr>
+            <th>Phone:</th>
+            <td>{{ purchase_order.supplier.phone }}</td>
+          </tr>
+          <tr>
+            <th>Address:</th>
+            <td>{{ purchase_order.supplier.address }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="fas fa-list me-2"></i> Order Items</span>
+    <span>Total: ${{ purchase_order.total_amount|floatformat:2 }}</span>
+  </div>
+  <div class="card-body">
+    {% if purchase_order.items.all %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total Price</th>
+            <th>Received</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in purchase_order.items.all %}
+          <tr>
+            <td>
+              <a
+                href="{% url 'product_inventory' product_id=item.product.id %}"
+              >
+                {{ item.product.name }}
+              </a>
+            </td>
+            <td>{{ item.product.sku }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>${{ item.unit_price|floatformat:2 }}</td>
+            <td>${{ item.get_total_price|floatformat:2 }}</td>
+            <td>
+              {% if item.received_quantity > 0 %}
+              <span class="badge bg-success"
+                >{{ item.received_quantity }}/{{ item.quantity }}</span
+              >
+              {% else %}
+              <span class="badge bg-secondary">0/{{ item.quantity }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-2"></i> No items added to this purchase
+      order yet.
+      <a
+        href="{% url 'add_purchase_order_item' po_id=purchase_order.id %}"
+        class="alert-link"
+        >Add an item</a
+      >.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if purchase_order.status == 'ordered' %}
+<div class="card">
+  <div class="card-header">
+    <i class="fas fa-truck-loading me-2"></i> Receive Items
+  </div>
+  <div class="card-body">
+    <form
+      method="post"
+      action="{% url 'receive_purchase_order' po_id=purchase_order.id %}"
+    >
+      {% csrf_token %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Ordered</th>
+              <th>Already Received</th>
+              <th>Receive Now</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in purchase_order.items.all %}
+            <tr>
+              <td>{{ item.product.name }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.received_quantity }}</td>
+              <td>
+                <input
+                  type="number"
+                  name="received_quantity_{{ item.id }}"
+                  class="form-control"
+                  min="0"
+                  max="{{ item.quantity|sub:item.received_quantity }}"
+                  value="0"
+                />
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-check"></i> Confirm Receipt
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %} {% endblock %}

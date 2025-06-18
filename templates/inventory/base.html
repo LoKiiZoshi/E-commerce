@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Inventory Management System{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Custom CSS -->
+    <style>
+      :root {
+        --primary-color: #3498db;
+        --secondary-color: #2c3e50;
+        --success-color: #2ecc71;
+        --danger-color: #e74c3c;
+        --warning-color: #f39c12;
+        --info-color: #1abc9c;
+      }
+
+      .sidebar {
+        background-color: var(--secondary-color);
+        min-height: 100vh;
+        color: white;
+      }
+
+      .sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 0.75rem 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .sidebar .nav-link:hover {
+        color: white;
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .sidebar .nav-link.active {
+        color: white;
+        background-color: var(--primary-color);
+      }
+
+      .sidebar .nav-link i {
+        margin-right: 0.5rem;
+      }
+
+      .main-content {
+        padding: 2rem;
+      }
+
+      .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        margin-bottom: 1.5rem;
+      }
+
+      .card-header {
+        background-color: rgba(0, 0, 0, 0.03);
+        font-weight: 500;
+      }
+
+      .table th {
+        font-weight: 500;
+        background-color: rgba(0, 0, 0, 0.03);
+      }
+
+      .badge-low-stock {
+        background-color: var(--danger-color);
+        color: white;
+      }
+
+      .badge-in-stock {
+        background-color: var(--success-color);
+        color: white;
+      }
+
+      .badge-draft {
+        background-color: var(--secondary-color);
+        color: white;
+      }
+
+      .badge-approved {
+        background-color: var(--info-color);
+        color: white;
+      }
+
+      .badge-ordered {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .badge-received {
+        background-color: var(--success-color);
+        color: white;
+      }
+
+      .badge-cancelled {
+        background-color: var(--danger-color);
+        color: white;
+      }
+    </style>
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+          <div class="position-sticky pt-3">
+            <div class="text-center mb-4">
+              <h4>Inventory System</h4>
+            </div>
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a
+                  class="nav-link {% if request.path == '/inventory/dashboard/' %}active{% endif %}"
+                  href="{% url 'inventory_dashboard' %}"
+                >
+                  <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link {% if '/inventory/suppliers/' in request.path %}active{% endif %}"
+                  href="{% url 'supplier_list' %}"
+                >
+                  <i class="fas fa-truck"></i> Suppliers
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link {% if '/inventory/purchase-orders/' in request.path %}active{% endif %}"
+                  href="{% url 'purchase_order_list' %}"
+                >
+                  <i class="fas fa-shopping-cart"></i> Purchase Orders
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'admin:index' %}">
+                  <i class="fas fa-cog"></i> Admin
+                </a>
+              </li>
+              <li class="nav-item mt-4">
+                <a class="nav-link" href="{% url 'logout' %}">
+                  <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+          <!-- Header -->
+          <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+          >
+            <h1 class="h2">{% block header %}Dashboard{% endblock %}</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+              {% block header_buttons %}{% endblock %}
+            </div>
+          </div>
+
+          <!-- Messages -->
+          {% if messages %} {% for message in messages %}
+          <div
+            class="alert alert-{{ message.tags }} alert-dismissible fade show"
+            role="alert"
+          >
+            {{ message }}
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          {% endfor %} {% endif %}
+
+          <!-- Content -->
+          {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom JS -->
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>
