@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Stock Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .low-stock {
+            background-color: #fff3cd !important;
+        }
+        .out-of-stock {
+            background-color: #f8d7da !important;
+        }
+        .stock-badge {
+            font-size: 0.8rem;
+        }
+        .sidebar {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .main-content {
+            min-height: 100vh;
+        }
+        .stats-card {
+            border-left: 4px solid #007bff;
+        }
+        .stats-card.warning {
+            border-left-color: #ffc107;
+        }
+        .stats-card.danger {
+            border-left-color: #dc3545;
+        }
+        .stats-card.success {
+            border-left-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-3">
+                <h4 class="text-primary mb-4">
+                    <i class="bi bi-boxes"></i> Inventory
+                </h4>
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#dashboard" onclick="showSection('dashboard')">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a class="nav-link" href="#inventory" onclick="showSection('inventory')">
+                        <i class="bi bi-box-seam"></i> Inventory
+                    </a>
+                    <a class="nav-link" href="#add-item" onclick="showSection('add-item')">
+                        <i class="bi bi-plus-circle"></i> Add Item
+                    </a>
+                    <a class="nav-link" href="#reports" onclick="showSection('reports')">
+                        <i class="bi bi-graph-up"></i> Reports
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content p-4">
+                <!-- Dashboard Section -->
+                <div id="dashboard" class="section">
+                    <h2 class="mb-4">Dashboard</h2>
+                    
+                    <!-- Stats Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title text-muted">Total Items</h6>
+                                            <h3 id="total-items">0</h3>
+                                        </div>
+                                        <i class="bi bi-boxes fs-1 text-primary"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card success">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title text-muted">In Stock</h6>
+                                            <h3 id="in-stock">0</h3>
+                                        </div>
+                                        <i class="bi bi-check-circle fs-1 text-success"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card warning">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title text-muted">Low Stock</h6>
+                                            <h3 id="low-stock">0</h3>
+                                        </div>
+                                        <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card danger">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title text-muted">Out of Stock</h6>
+                                            <h3 id="out-of-stock">0</h3>
+                                        </div>
+                                        <i class="bi bi-x-circle fs-1 text-danger"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Recent Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="recent-activity">
+                                <p class="text-muted">No recent activity</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Section -->
+                <div id="inventory" class="section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Inventory Management</h2>
+                        <button class="btn btn-primary" onclick="showSection('add-item')">
+                            <i class="bi bi-plus"></i> Add New Item
+                        </button>
+                    </div>
+
+                    <!-- Search and Filter -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="search-input" placeholder="Search items..." onkeyup="filterItems()">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="category-filter" onchange="filterItems()">
+                                <option value="">All Categories</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Books">Books</option>
+                                <option value="Home">Home</option>
+                                <option value="Sports">Sports</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="stock-filter" onchange="filterItems()">
+                                <option value="">All Stock Levels</option>
+                                <option value="in-stock">In Stock</option>
+                                <option value="low-stock">Low Stock</option>
+                                <option value="out-of-stock">Out of Stock</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Table -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Price</th>
+                                            <th>Quantity</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inventory-table">
+                                        <!-- Items will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Item Section -->
+                <div id="add-item" class="section" style="display: none;">
+                    <h2 class="mb-4">Add New Item</h2>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="add-item-form">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="item-name" class="form-label">Item Name *</label>
+                                        <input type="text" class="form-control" id="item-name" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="item-category" class="form-label">Category *</label>
+                                        <select class="form-select" id="item-category" required>
+                                            <option value="">Select Category</option>
+                                            <option value="Electronics">Electronics</option>
+                                            <option value="Clothing">Clothing</option>
+                                            <option value="Books">Books</option>
+                                            <option value="Home">Home</option>
+                                            <option value="Sports">Sports</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="item-price" class="form-label">Price *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="item-price" step="0.01" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="item-quantity" class="form-label">Quantity *</label>
+                                        <input type="number" class="form-control" id="item-quantity" min="0" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="item-min-stock" class="form-label">Minimum Stock Level</label>
+                                        <input type="number" class="form-control" id="item-min-stock" min="0" value="5">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="item-description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="item-description" rows="3"></textarea>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-plus"></i> Add Item
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                                        <i class="bi bi-arrow-clockwise"></i> Clear
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Section -->
+                <div id="reports" class="section" style="display: none;">
+                    <h2 class="mb-4">Reports</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Stock Status Summary</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="stock-chart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Category Distribution</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="category-report">
+                                        <!-- Category stats will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Low Stock Alert</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="low-stock-alert">
+                                <!-- Low stock items will be listed here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-item-form">
+                        <input type="hidden" id="edit-item-id">
+                        <div class="mb-3">
+                            <label for="edit-item-name" class="form-label">Item Name</label>
+                            <input type="text" class="form-control" id="edit-item-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-item-category" class="form-label">Category</label>
+                            <select class="form-select" id="edit-item-category" required>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Books">Books</option>
+                                <option value="Home">Home</option>
+                                <option value="Sports">Sports</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-item-price" class="form-label">Price</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="edit-item-price" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-item-quantity" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="edit-item-quantity" min="0" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-item-min-stock" class="form-label">Minimum Stock Level</label>
+                            <input type="number" class="form-control" id="edit-item-min-stock" min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-item-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="edit-item-description" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="updateItem()">Update Item</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Inventory data storage
+        let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+        let nextId = parseInt(localStorage.getItem('nextId')) || 1;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSampleData();
+            updateDashboard();
+            renderInventoryTable();
+            updateReports();
+        });
+
+        // Load sample data if inventory is empty
+        function loadSampleData() {
+            if (inventory.length === 0) {
+                inventory = [
+                    {
+                        id: 1,
+                        name: "Laptop Computer",
+                        category: "Electronics",
+                        price: 999.99,
+                        quantity: 15,
+                        minStock: 5,
+                        description: "High-performance laptop for business use"
+                    },
+                    {
+                        id: 2,
+                        name: "T-Shirt",
+                        category: "Clothing",
+                        price: 19.99,
+                        quantity: 3,
+                        minStock: 10,
+                        description: "Cotton t-shirt, various sizes"
+                    },
+                    {
+                        id: 3,
+                        name: "Programming Book",
+                        category: "Books",
+                        price: 49.99,
+                        quantity: 0,
+                        minStock: 2,
+                        description: "Learn JavaScript programming"
+                    },
+                    {
+                        id: 4,
+                        name: "Coffee Mug",
+                        category: "Home",
+                        price: 12.99,
+                        quantity: 25,
+                        minStock: 5,
+                        description: "Ceramic coffee mug"
+                    }
+                ];
+                nextId = 5;
+                saveData();
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('inventory', JSON.stringify(inventory));
+            localStorage.setItem('nextId', nextId.toString());
+        }
+
+        // Show specific section
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).style.display = 'block';
+            
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[href="#${sectionId}"]`).classList.add('active');
+            
+            // Update content based on section
+            if (sectionId === 'dashboard') {
+                updateDashboard();
+            } else if (sectionId === 'inventory') {
+                renderInventoryTable();
+            } else if (sectionId === 'reports') {
+                updateReports();
+            }
+        }
+
+        // Update dashboard statistics
+        function updateDashboard() {
+            const totalItems = inventory.length;
+            const inStock = inventory.filter(item => item.quantity > item.minStock).length;
+            const lowStock = inventory.filter(item => item.quantity > 0 && item.quantity <= item.minStock).length;
+            const outOfStock = inventory.filter(item => item.quantity === 0).length;
+
+            document.getElementById('total-items').textContent = totalItems;
+            document.getElementById('in-stock').textContent = inStock;
+            document.getElementById('low-stock').textContent = lowStock;
+            document.getElementById('out-of-stock').textContent = outOfStock;
+
+            // Update recent activity
+            updateRecentActivity();
+        }
+
+        // Update recent activity
+        function updateRecentActivity() {
+            const activityDiv = document.getElementById('recent-activity');
+            const lowStockItems = inventory.filter(item => item.quantity <= item.minStock);
+            
+            if (lowStockItems.length > 0) {
+                let activityHTML = '<h6>Items requiring attention:</h6>';
+                lowStockItems.slice(0, 5).forEach(item => {
+                    const status = item.quantity === 0 ? 'Out of stock' : 'Low stock';
+                    const badgeClass = item.quantity === 0 ? 'bg-danger' : 'bg-warning';
+                    activityHTML += `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>${item.name}</span>
+                            <span class="badge ${badgeClass}">${status}</span>
+                        </div>
+                    `;
+                });
+                activityDiv.innerHTML = activityHTML;
+            } else {
+                activityDiv.innerHTML = '<p class="text-muted">All items are well stocked!</p>';
+            }
+        }
+
+        // Render inventory table
+        function renderInventoryTable() {
+            const tableBody = document.getElementById('inventory-table');
+            
+            if (inventory.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No items in inventory</td></tr>';
+                return;
+            }
+
+            let html = '';
+            inventory.forEach(item => {
+                const stockStatus = getStockStatus(item);
+                const rowClass = stockStatus.class;
+                
+                html += `
+                    <tr class="${rowClass}">
+                        <td>${item.id}</td>
+                        <td>${item.name}</td>
+                        <td>${item.category}</td>
+                        <td>$${item.price.toFixed(2)}</td>
+                        <td>${item.quantity}</td>
+                        <td><span class="badge ${stockStatus.badgeClass} stock-badge">${stockStatus.text}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editItem(${item.id})" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success me-1" onclick="adjustStock(${item.id}, 1)" title="Add Stock">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning me-1" onclick="adjustStock(${item.id}, -1)" title="Remove Stock">
+                                <i class="bi bi-dash"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+
+        // Get stock status
+        function getStockStatus(item) {
+            if (item.quantity === 0) {
+                return { text: 'Out of Stock', class: 'out-of-stock', badgeClass: 'bg-danger' };
+            } else if (item.quantity <= item.minStock) {
+                return { text: 'Low Stock', class: 'low-stock', badgeClass: 'bg-warning' };
+            } else {
+                return { text: 'In Stock', class: '', badgeClass: 'bg-success' };
+            }
+        }
+
+        // Filter items
+        function filterItems() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const categoryFilter = document.getElementById('category-filter').value;
+            const stockFilter = document.getElementById('stock-filter').value;
+
+            const rows = document.querySelectorAll('#inventory-table tr');
+            
+            rows.forEach(row => {
+                if (row.cells.length < 7) return; // Skip empty row
+                
+                const name = row.cells[1].textContent.toLowerCase();
+                const category = row.cells[2].textContent;
+                const quantity = parseInt(row.cells[4].textContent);
+                
+                // Get item for stock status
+                const itemId = parseInt(row.cells[0].textContent);
+                const item = inventory.find(i => i.id === itemId);
+                
+                let showRow = true;
+                
+                // Search filter
+                if (searchTerm && !name.includes(searchTerm)) {
+                    showRow = false;
+                }
+                
+                // Category filter
+                if (categoryFilter && category !== categoryFilter) {
+                    showRow = false;
+                }
+                
+                // Stock filter
+                if (stockFilter && item) {
+                    const stockStatus = getStockStatus(item);
+                    if (stockFilter === 'in-stock' && stockStatus.text !== 'In Stock') {
+                        showRow = false;
+                    } else if (stockFilter === 'low-stock' && stockStatus.text !== 'Low Stock') {
+                        showRow = false;
+                    } else if (stockFilter === 'out-of-stock' && stockStatus.text !== 'Out of Stock') {
+                        showRow = false;
+                    }
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            });
+        }
+
+        // Add new item
+        document.getElementById('add-item-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newItem = {
+                id: nextId++,
+                name: document.getElementById('item-name').value,
+                category: document.getElementById('item-category').value,
+                price: parseFloat(document.getElementById('item-price').value),
+                quantity: parseInt(document.getElementById('item-quantity').value),
+                minStock: parseInt(document.getElementById('item-min-stock').value) || 5,
+                description: document.getElementById('item-description').value
+            };
+            
+            inventory.push(newItem);
+            saveData();
+            
+            // Show success message
+            alert('Item added successfully!');
+            
+            // Clear form and redirect to inventory
+            clearForm();
+            showSection('inventory');
+        });
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('add-item-form').reset();
+        }
+
+        // Edit item
+        function editItem(id) {
+            const item = inventory.find(i => i.id === id);
+            if (!item) return;
+            
+            document.getElementById('edit-item-id').value = item.id;
+            document.getElementById('edit-item-name').value = item.name;
+            document.getElementById('edit-item-category').value = item.category;
+            document.getElementById('edit-item-price').value = item.price;
+            document.getElementById('edit-item-quantity').value = item.quantity;
+            document.getElementById('edit-item-min-stock').value = item.minStock;
+            document.getElementById('edit-item-description').value = item.description;
+            
+            new bootstrap.Modal(document.getElementById('editModal')).show();
+        }
+
+        // Update item
+        function updateItem() {
+            const id = parseInt(document.getElementById('edit-item-id').value);
+            const itemIndex = inventory.findIndex(i => i.id === id);
+            
+            if (itemIndex === -1) return;
+            
+            inventory[itemIndex] = {
+                ...inventory[itemIndex],
+                name: document.getElementById('edit-item-name').value,
+                category: document.getElementById('edit-item-category').value,
+                price: parseFloat(document.getElementById('edit-item-price').value),
+                quantity: parseInt(document.getElementById('edit-item-quantity').value),
+                minStock: parseInt(document.getElementById('edit-item-min-stock').value),
+                description: document.getElementById('edit-item-description').value
+            };
+            
+            saveData();
+            renderInventoryTable();
+            updateDashboard();
+            
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            alert('Item updated successfully!');
+        }
+
+        // Adjust stock
+        function adjustStock(id, change) {
+            const item = inventory.find(i => i.id === id);
+            if (!item) return;
+            
+            const newQuantity = Math.max(0, item.quantity + change);
+            item.quantity = newQuantity;
+            
+            saveData();
+            renderInventoryTable();
+            updateDashboard();
+        }
+
+        // Delete item
+        function deleteItem(id) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                inventory = inventory.filter(i => i.id !== id);
+                saveData();
+                renderInventoryTable();
+                updateDashboard();
+                alert('Item deleted successfully!');
+            }
+        }
+
+        // Update reports
+        function updateReports() {
+            updateCategoryReport();
+            updateLowStockAlert();
+        }
+
+        // Update category report
+        function updateCategoryReport() {
+            const categoryStats = {};
+            
+            inventory.forEach(item => {
+                if (!categoryStats[item.category]) {
+                    categoryStats[item.category] = { count: 0, totalValue: 0 };
+                }
+                categoryStats[item.category].count++;
+                categoryStats[item.category].totalValue += item.price * item.quantity;
+            });
+            
+            let html = '';
+            Object.entries(categoryStats).forEach(([category, stats]) => {
+                html += `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                        <div>
+                            <strong>${category}</strong>
+                            <br>
+                            <small class="text-muted">${stats.count} items</small>
+                        </div>
+                        <div class="text-end">
+                            <strong>$${stats.totalValue.toFixed(2)}</strong>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('category-report').innerHTML = html || '<p class="text-muted">No data available</p>';
+        }
+
+        // Update low stock alert
+        function updateLowStockAlert() {
+            const lowStockItems = inventory.filter(item => item.quantity <= item.minStock);
+            
+            let html = '';
+            if (lowStockItems.length > 0) {
+                html = '<div class="alert alert-warning"><strong>Items requiring attention:</strong></div>';
+                lowStockItems.forEach(item => {
+                    const alertClass = item.quantity === 0 ? 'alert-danger' : 'alert-warning';
+                    html += `
+                        <div class="alert ${alertClass} d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${item.name}</strong> (${item.category})
+                                <br>
+                                <small>Current: ${item.quantity} | Minimum: ${item.minStock}</small>
+                            </div>
+                            <button class="btn btn-sm btn-primary" onclick="editItem(${item.id})">
+                                Restock
+                            </button>
+                        </div>
+                    `;
+                });
+            } else {
+                html = '<div class="alert alert-success">All items are adequately stocked!</div>';
+            }
+            
+            document.getElementById('low-stock-alert').innerHTML = html;
+        }
+    </script>
+</body>
+</html>
