@@ -1,0 +1,186 @@
+{% extends 'base.html' %} {% block title %}Shopping Cart - AI
+E-Commerce{%endblock %} {% block content %}
+<div class="cart-page">
+  <h1 class="mb-4">Shopping Cart</h1>
+
+  {% if cart.items.exists %}
+  <div class="row">
+    <!-- Cart Items -->
+    <div class="col-lg-8 mb-4">
+      <div class="card">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Cart Items ({{ cart.get_total_items }})</h5>
+        </div>
+        <div class="card-body">
+          {% for item in cart.items.all %}
+          <div
+            class="cart-item cart-item-{{ item.id }} d-flex align-items-center"
+          >
+            <div class="me-3">
+              {% if item.product.images.exists %}
+              <img
+                src="{{ item.product.images.first.image.url }}"
+                class="item-image rounded"
+                alt="{{ item.product.title }}"
+              />
+              {% else %}
+              <img
+                src="/static/images/product-placeholder.png"
+                class="item-image rounded"
+                alt="{{ item.product.title }}"
+              />
+              {% endif %}
+            </div>
+            <div class="item-details">
+              <h5 class="item-title">
+                <a
+                  href="{% url 'product_detail' slug=item.product.slug %}"
+                  class="text-decoration-none"
+                  >{{ item.product.title }}</a
+                >
+              </h5>
+              <div class="item-price mb-2">
+                {% if item.product.discount_price %} ${{
+                item.product.discount_price }}
+                <small class="text-muted text-decoration-line-through"
+                  >${{ item.product.price }}</small
+                >
+                {% else %} ${{ item.product.price }} {% endif %}
+              </div>
+              <div class="d-flex align-items-center">
+                <form
+                  class="update-cart-form me-3"
+                  data-item-id="{{ item.id }}"
+                >
+                  {% csrf_token %}
+                  <div class="input-group input-group-sm">
+                    <input
+                      type="number"
+                      name="quantity"
+                      class="form-control item-quantity"
+                      value="{{ item.quantity }}"
+                      min="1"
+                      max="{{ item.product.stock }}"
+                    />
+                    <button class="btn btn-outline-primary" type="submit">
+                      Update
+                    </button>
+                  </div>
+                </form>
+                <button
+                  class="btn btn-sm btn-outline-danger remove-from-cart"
+                  data-item-id="{{ item.id }}"
+                >
+                  <i class="fas fa-trash"></i> Remove
+                </button>
+              </div>
+            </div>
+            <div class="ms-auto text-end">
+              <div class="fw-bold item-total-{{ item.id }}">
+                ${{ item.get_total_price }}
+              </div>
+            </div>
+          </div>
+          {% if not forloop.last %}
+          <hr />
+          {% endif %} {% endfor %}
+        </div>
+        <div class="card-footer bg-white d-flex justify-content-between">
+          <a href="{% url 'product_list' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+          </a>
+          <form action="{% url 'clear_cart' %}" method="post" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger">
+              <i class="fas fa-trash me-2"></i>Clear Cart
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cart Summary -->
+    <div class="col-lg-4">
+      <div class="card cart-summary">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Order Summary</h5>
+        </div>
+        <div class="card-body">
+          <div class="summary-item">
+            <span>Subtotal:</span>
+            <span class="cart-subtotal">${{ cart.get_total_price }}</span>
+          </div>
+          <div class="summary-item">
+            <span>Shipping:</span>
+            <span>Calculated at checkout</span>
+          </div>
+          <div class="summary-item">
+            <span>Tax:</span>
+            <span>Calculated at checkout</span>
+          </div>
+          <div class="summary-item summary-total">
+            <span>Total:</span>
+            <span>${{ cart.get_total_price }}</span>
+          </div>
+        </div>
+        <div class="card-footer bg-white">
+          <a href="{% url 'checkout' %}" class="btn btn-primary w-100">
+            <i class="fas fa-lock me-2"></i>Proceed to Checkout
+          </a>
+        </div>
+      </div>
+
+      <!-- Coupon Code -->
+      <div class="card mt-3">
+        <div class="card-body">
+          <h5 class="card-title">Have a coupon?</h5>
+          <form>
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Coupon code"
+              />
+              <button class="btn btn-outline-primary" type="submit">
+                Apply
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- AI Recommendations -->
+      <div class="card mt-3">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">AI Recommendations</h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">
+            Based on your cart items, you might also like:
+          </p>
+          <div class="recommendations">
+            <!-- This would be populated by the AI recommendation system -->
+            <div class="alert alert-info">
+              Recommendations will appear here based on your shopping behavior.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="card text-center py-5">
+    <div class="card-body">
+      <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+      <h3>Your cart is empty</h3>
+      <p class="mb-4">
+        Looks like you haven't added any products to your cart yet.
+      </p>
+      <a href="{% url 'product_list' %}" class="btn btn-primary">
+        <i class="fas fa-shopping-bag me-2"></i>Start Shopping
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

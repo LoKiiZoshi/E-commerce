@@ -1,0 +1,202 @@
+{% extends 'inventory/base.html' %} {% block title %}{{ product.name }} -
+Inventory{% endblock %} {% block header %}Product Inventory: {{ product.name
+}}{% endblock %} {% block header_buttons %}
+<a
+  href="{% url 'add_stock_movement' product_id=product.id %}"
+  class="btn btn-sm btn-outline-primary me-2"
+>
+  <i class="fas fa-plus"></i> Add Stock Movement
+</a>
+<a
+  href="{% url 'generate_inventory_forecast' product_id=product.id %}"
+  class="btn btn-sm btn-outline-info"
+>
+  <i class="fas fa-chart-line"></i> Generate Forecast
+</a>
+{% endblock %} {% block content %}
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-box me-2"></i> Product Details
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="text-center mb-3">
+              {% if product.image %}
+              <img
+                src="{{ product.image.url }}"
+                alt="{{ product.name }}"
+                class="img-fluid rounded"
+                style="max-height: 150px"
+              />
+              {% else %}
+              <div
+                class="bg-light rounded d-flex align-items-center justify-content-center"
+                style="height: 150px; width: 100%"
+              >
+                <i class="fas fa-box fa-3x text-secondary"></i>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-8">
+            <table class="table table-sm">
+              <tr>
+                <th>SKU:</th>
+                <td>{{ product.sku }}</td>
+              </tr>
+              <tr>
+                <th>Current Stock:</th>
+                <td>
+                  {% if product.stock < 10 %}
+                  <span class="badge badge-low-stock">{{ product.stock }}</span>
+                  {% else %}
+                  <span class="badge badge-in-stock">{{ product.stock }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th>Category:</th>
+                <td>{{ product.category.name }}</td>
+              </tr>
+              <tr>
+                <th>Price:</th>
+                <td>${{ product.price }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-chart-line me-2"></i> Inventory Forecast
+      </div>
+      <div class="card-body">
+        {% if inventory_forecasts %}
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Predicted Demand</th>
+                <th>Confidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for forecast in inventory_forecasts|slice:":7" %}
+              <tr>
+                <td>{{ forecast.forecast_date }}</td>
+                <td>{{ forecast.predicted_demand|floatformat:0 }}</td>
+                <td>{{ forecast.confidence_level|floatformat:2 }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if inventory_forecasts.count > 7 %}
+        <div class="text-center mt-2">
+          <button
+            class="btn btn-sm btn-outline-primary"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#moreForecast"
+          >
+            Show More
+          </button>
+        </div>
+        <div class="collapse mt-2" id="moreForecast">
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Predicted Demand</th>
+                  <th>Confidence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for forecast in inventory_forecasts|slice:"7:" %}
+                <tr>
+                  <td>{{ forecast.forecast_date }}</td>
+                  <td>{{ forecast.predicted_demand|floatformat:0 }}</td>
+                  <td>{{ forecast.confidence_level|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% endif %} {% else %}
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i> No forecast data available.
+          <a
+            href="{% url 'generate_inventory_forecast' product_id=product.id %}"
+            class="alert-link"
+            >Generate forecast</a
+          >.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-exchange-alt me-2"></i> Stock Movement History
+      </div>
+      <div class="card-body">
+        {% if stock_movements %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Quantity</th>
+                <th>Reference</th>
+                <th>Notes</th>
+                <th>Created By</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for movement in stock_movements %}
+              <tr>
+                <td>{{ movement.created_at|date:"M d, Y H:i" }}</td>
+                <td>
+                  {% if movement.movement_type == 'in' %}
+                  <span class="badge bg-success">IN</span>
+                  {% elif movement.movement_type == 'out' %}
+                  <span class="badge bg-danger">OUT</span>
+                  {% else %}
+                  <span class="badge bg-warning">ADJUSTMENT</span>
+                  {% endif %}
+                </td>
+                <td>{{ movement.quantity }}</td>
+                <td>{{ movement.reference }}</td>
+                <td>{{ movement.notes|default:"-" }}</td>
+                <td>{{ movement.created_by.username }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i> No stock movement history for
+          this product.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
